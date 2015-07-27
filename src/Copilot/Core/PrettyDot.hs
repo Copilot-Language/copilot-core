@@ -92,8 +92,8 @@ ppExprDot ii pere bb e0 = case e0 of
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
                   <> (hcat (r1)),i1)
 
-  GetField _ _ _ name          -> (text (printf "%s [label=\"field: %s\",color=dodgerblue3, style=filled]\n" (show ii::String) (name::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+  GetField _ _ e1 name         -> let (r1,i1) = ppExprDot (ii+1) ii bb e1 in (text (printf "%s [label=\"field: %s\",color=dodgerblue3, style=filled]\n" (show ii::String) (name::String) )
+                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) <> r1,i1)
 
   Local _ _ name e1 e2       -> let (r1, i1) = ppExprDot (ii+2) (ii+1) bb e1 
                                 in let (r2, i2) = ppExprDot (i1) ii bb e2

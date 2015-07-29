@@ -223,8 +223,7 @@ ppExternalStruct :: ExtStruct -> Doc
 ppExternalStruct
   ExtStruct
   { externStructName  = name
-  , externStructArgs  = args
-  , externStructTag   = tag } =
+  , externStructArgs  = args } =
       --text "struct" <+> text name <> text "{" <> ppStructArgs args <> text "};"
       hang (hang (text "struct" <+> text name <+> text "{") 1 (nest 1 (ppStructArgs args))) 1 (text "};")
 

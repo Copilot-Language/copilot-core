@@ -62,7 +62,7 @@ genSpec rnds = do
       ws <- weights                 
       WrapType t <- genType ws
       evalExpr <- randomReplicate rnds t
-      let expr = ExternVar t ("ext" ++ show i) (Just evalExpr)
+      let expr = ExternVar t ("ext" ++ show i) (Just evalExpr) Nothing
       return $ toDynF t expr
 
 --------------------------------------------------------------------------------

@@ -125,7 +125,9 @@ mkTagsExpr e0 = case e0 of
   Drop t k id                    -> return $ Drop t k id
   Local t1 t2 name e1 e2         -> liftM2 (Local t1 t2 name) (mkTagsExpr e1) (mkTagsExpr e2)
   Var t name                     -> return $ Var t name
-  ExternVar t name e             -> return $ ExternVar t name e
+  ExternVar t name e _           -> do
+                                    k <- get
+                                    return $ ExternVar t name e (Just k)
   ExternFun t name args expr _   -> do args' <- mapM mkTagsUExpr args
                                        k <- next
                                        return $ ExternFun t name args' expr (Just k)

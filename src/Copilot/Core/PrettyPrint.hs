@@ -30,7 +30,7 @@ ppExpr e0 = case e0 of
   Const t x                  -> text (showWithType Haskell t x)
   Drop _ 0 id                -> strmName id
   Drop _ i id                -> text "drop" <+> text (show i) <+> strmName id
-  ExternVar _ name _         -> text "Ext_" <> (text name)
+  ExternVar _ name _ _       -> text "Ext_" <> (text name)
   ExternFun _ name args _ _  -> 
     text "Extf_" <> (text name) <> lparen <> 
          (hcat (punctuate (comma <> space) (map ppUExpr args))

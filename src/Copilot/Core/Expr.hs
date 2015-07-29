@@ -46,7 +46,7 @@ data Expr a where
   Drop         :: Type a -> DropIdx -> Id -> Expr a
   Local        :: Type a -> Type b -> Name -> Expr a -> Expr b -> Expr b
   Var          :: Type a -> Name -> Expr a 
-  ExternVar    :: Type a -> Name -> Maybe [a] -> Expr a 
+  ExternVar    :: Type a -> Name -> Maybe [a] -> Maybe Tag -> Expr a 
   ExternFun    :: Type a -> Name -> [UExpr] -> Maybe (Expr a) 
                -> Maybe Tag -> Expr a
   ExternArray  :: Integral a => Type a -> Type b -> Name -> Int -> Expr a

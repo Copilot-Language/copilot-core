@@ -22,6 +22,7 @@ import Prelude as P hiding (all, concat, foldr)
 
 data ExtVar = ExtVar
   { externVarName :: Name
+  , externVarTag  :: Maybe Tag
   , externVarType :: UType }
 
 data ExtArray = forall a b . Integral a => ExtArray
@@ -58,11 +59,15 @@ externVarsExpr e0 = case e0 of
   Drop   _ _ _              -> empty
   Local _ _ _ e1 e2         -> externVarsExpr e1 `append` externVarsExpr e2
   Var _ _                   -> empty
-  ExternVar t name _        -> singleton (ExtVar name (UType t))
+  ExternVar t name _ tag    -> singleton (ExtVar name tag $ UType t)
   ExternArray _ _ _ _ e _ _ -> externVarsExpr e
   ExternFun _ _ ues _ _     -> concat (P.map externVarsUExpr ues)
-  ExternStruct _ sn ses _   -> DL.map (\ExtVar { externVarName = n, externVarType = t } ->
-                                      ExtVar { externVarName = sn++"."++n, externVarType = t })
+  ExternStruct _ sn ses _   -> DL.map (\ExtVar { externVarName = n
+                                               , externVarTag  = tag
+                                               , externVarType = t } ->
+                                      ExtVar { externVarName = sn++"."++n
+                                             , externVarTag  = tag
+                                             , externVarType = t })
                                $ concat (P.map (externVarsUExpr . snd) ses)
   GetField _ _ struct _     -> externVarsExpr struct
   Op1 _ e                   -> externVarsExpr e
@@ -86,7 +91,7 @@ externArraysExpr e0 = case e0 of
   Drop   _ _ _                    -> empty
   Local _ _ _ e1 e2               -> externArraysExpr e1 `append` externArraysExpr e2
   Var _ _                         -> empty
-  ExternVar _ _ _                 -> empty
+  ExternVar _ _ _ _               -> empty
   ExternArray t1 t2  name 
               size idx _ tag      -> singleton (ExtArray name t2 idx t1 size tag)
   ExternFun _ _ ues _ _           -> concat (P.map externArraysUExpr ues)
@@ -125,7 +130,7 @@ externFunsExpr e0 = case e0 of
   Drop   _ _ _                -> empty
   Local _ _ _ e1 e2           -> externFunsExpr e1 `append` externFunsExpr e2
   Var _ _                     -> empty
-  ExternVar _ _ _             -> empty
+  ExternVar _ _ _ _           -> empty
   ExternArray _ _ _ _ idx _ _ -> externFunsExpr idx
   ExternFun t name ues _ tag  -> concat $ singleton (ExtFun name t ues tag) : (P.map externFunsUExpr ues)
   ExternStruct _ sn ses _     -> DL.map (\ExtFun { externFunName      = n
@@ -160,16 +165,16 @@ externStructsExpr e0 = case e0 of
   Drop  _ _ _                     -> empty
   Local _ _ _ _ _                 -> empty
   Var   _ _                       -> empty
-  ExternVar   _ _ _               -> empty
+  ExternVar   _ _ _ _             -> empty
   ExternArray _ _ _ _ _ _ _       -> empty
   ExternFun   _ _ _ _ _           -> empty
   ExternStruct _ name ses tag     -> concat (singleton (ExtStruct name ses tag) :
                                       [DL.map (\ExtStruct { externStructName  = n
                                                        , externStructArgs  = sargs
-                                                       , externStructTag   = tag } ->
+                                                       , externStructTag   = sTag } ->
                                                  ExtStruct { externStructName  = name++"."++n
                                                         , externStructArgs  = sargs
-                                                        , externStructTag   = tag })
+                                                        , externStructTag   = sTag })
                                         (concat $ P.map (externStrsUExpr . snd) ses)])
                                       --concat . map externStructsUExpr ues
                       -- all expressions in a struct are typed

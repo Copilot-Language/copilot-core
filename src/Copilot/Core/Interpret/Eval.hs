@@ -166,7 +166,7 @@ evalExpr_ k e0 locs strms = case e0 of
     let locs' = (name, toDyn t1 x) : locs  in
     x `seq` locs' `seq` evalExpr_ k e2  locs' strms
   Var t name                         -> fromJust $ lookup name locs >>= fromDyn t
-  ExternVar _ name xs                -> evalExternVar k name xs
+  ExternVar _ name xs _              -> evalExternVar k name xs
   ExternFun _ name _ expr _          -> --evalFunc k t name expr 
     case expr of
       Nothing -> throw (NoExtsInterp name)

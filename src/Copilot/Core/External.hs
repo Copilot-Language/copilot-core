@@ -182,6 +182,7 @@ externStructsExpr e0 = case e0 of
   Op1   _ _                       -> empty
   Op2   _ _ _                     -> empty
   Op3   _ _ _ _                   -> empty
+  Label t s e                     -> externStructsExpr e
 
 externStrsUExpr :: UExpr -> DList ExtStruct
 externStrsUExpr UExpr { uExprExpr = e } = externStructsExpr e

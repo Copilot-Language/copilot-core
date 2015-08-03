@@ -178,7 +178,11 @@ externStructsExpr e0 = case e0 of
                                         (concat $ P.map (externStrsUExpr . snd) ses)])
                                       --concat . map externStructsUExpr ues
                       -- all expressions in a struct are typed
-  GetField _ _ struct _           -> externStructsExpr struct
+  GetField _ _ struct name       -> case struct of
+                                      ExternStruct t sname ses tag ->
+                                        concat (singleton (ExtStruct name ses tag) :
+                                        [(concat $ P.map (externStrsUExpr . snd) ses)])
+                                      _ -> empty
   Op1   _ _                       -> empty
   Op2   _ _ _                     -> empty
   Op3   _ _ _ _                   -> empty

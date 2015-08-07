@@ -191,15 +191,6 @@ externStructsExpr e0 = case e0 of
 externStrsUExpr :: UExpr -> DList ExtStruct
 externStrsUExpr UExpr { uExprExpr = e } = externStructsExpr e
 
-{-externStructsUExpr :: UExpr -> DList ExtStruct
-externStructsUExpr UExpr { uExprExpr = e } =
-  case e of
-    ExternVar _ _ _           -> externVarsExpr e
-    ExternArray _ _ _ _ _ _ _ -> externArraysExpr e
-    ExternFun _ _ _ _ _       -> externFunsExpr e
-    ExternStruct _ _ _        -> externStructsExpr e
-    _                         -> empty-}
-
 --------------------------------------------------------------------------------
 
 all :: (forall a . Expr a -> DList b) -> Spec -> DList b
@@ -220,9 +211,6 @@ all f spec =
 
   allUExpr
     (UExpr _ e1) = f e1
-
-{-  allSExpr
-    (SExpr _ (u)) = allUExpr u-}
 
   allObserver
     Observer { observerExpr = e } = f e

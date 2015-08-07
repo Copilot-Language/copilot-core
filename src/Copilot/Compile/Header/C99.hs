@@ -51,7 +51,7 @@ c99Header prefix spec = render $ vcat $
   , text ""
   , text "/* External structs (must be defined by user): */"
   , text ""
-  , ppExternalStructs ({-specStructs-}externStructs spec)
+  , ppExternalStructs (externStructs spec)
   , text ""
   , text "/* External variables (must be defined by user): */"
   , text ""
@@ -106,8 +106,7 @@ ppTriggerPrototypes prefix = vcat . map ppTriggerPrototype
       { triggerName = name
       , triggerArgs = args } =
           text "void" <+> text (prefix ++ name) <>
-          text "(" <> {-nonStructs . -}ppArgs args <> text ");" 
-            --(buildStruct . getStructs args)
+          text "(" <> ppArgs args <> text ");" 
 
     where
     ppArgs :: [UExpr] -> Doc
@@ -115,18 +114,6 @@ ppTriggerPrototypes prefix = vcat . map ppTriggerPrototype
 
     ppArg :: UExpr -> Doc
     ppArg UExpr { uExprType = t } = text (typeSpec (UType t))
-
-{-    nonStructs :: [UExpr] -> [UExpr]
-    nonStructs = filter (\UExpr { uExprExpr = e } -> e /= ExternStruct _ _ _ _)
-
-    getStructs :: [UExpr] -> [UExpr]
-    getStructs = map (\UExpr { uExprExpr = e } -> e)
-                  $ filter (\UExpr { uExprExpr = e } -> e == ExternStruct _ _ _ _)
-
-    buildStruct :: [Expr] -> Doc
-    buildStruct = vcat . map ppStruct . nubBy eq
-      where
-        eq ExternStruct -}
 
 --------------------------------------------------------------------------------
 
@@ -185,34 +172,6 @@ ppExternalFunction
 
 --------------------------------------------------------------------------------
 
-{-ppStructs :: [StructData] -> Doc
-ppStructs = vcat . map ppStruct . nubBy eq
-  where
-    eq StructData { structName = name1 } StructData { structName = name2 } = name1 == name2
-
-ppStruct :: StructData -> Doc
-ppStruct
-  StructData
-  { structName = name
-  , structInst = inst } =
-    case inst of
-      ExternStruct _ _ sargs _ ->
-        hang (hang (text "struct" <+> text name <+> text "{") 1 (nest 1 (ppStructArgs sargs))) 1 (text "};")
-      _                        -> error "Struct is not of type Struct"
-
-  where
-    ppStructArgs :: [SExpr] -> Doc
-    ppStructArgs = vcat . map ppStructArg . map (\SExpr { uexpr = u0 } -> u0)
-
-    ppStructArg :: UExpr -> Doc
-    ppStructArg UExpr { uExprType = t1, uExprExpr = e1 } = text (typeSpec (UType t1)) <+>
-      text ( case e1 of
-          Var _ name -> name
-          ExternVar _ name _ -> name
-          ExternFun _ name _ _ _ -> name
-          ExternStruct _ name _ _ -> name
-          _ -> "") <> text ";"
--}
 ppExternalStructs :: [ExtStruct] -> Doc
 ppExternalStructs = vcat . map ppExternalStruct . nubBy eq
   where
@@ -224,24 +183,15 @@ ppExternalStruct
   ExtStruct
   { externStructName  = name
   , externStructArgs  = args } =
-      --text "struct" <+> text name <> text "{" <> ppStructArgs args <> text "};"
       hang (hang (text "struct" <+> text name <+> text "{") 1 (nest 1 (ppStructArgs args))) 1 (text "};")
 
   where
-    --ppStructArgs :: [SExpr] -> Doc
-    --ppStructArgs = vcat . map ppStructArg . map (\SExpr { uexpr = u0 } -> u0)
     ppStructArgs :: [(Name, UExpr)] -> Doc
     ppStructArgs = vcat . map ppStructArg
 
     ppStructArg :: (Name, UExpr) -> Doc
     ppStructArg (name, UExpr { uExprType = t1, uExprExpr = e1 }) = text (typeSpec (UType t1)) <+>
       text name <> text ";"
-      {-text ( case e1 of
-          Var _ name -> name
-          ExternVar _ name _ -> name
-          ExternFun _ name _ _ _ -> name
-          ExternStruct _ name _ _ -> name
-          _ -> "") <> text ";"-}
 
 --------------------------------------------------------------------------------
 

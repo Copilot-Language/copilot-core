@@ -94,19 +94,6 @@ mkTagsProps = mapM mkTagsProp
           e' <- mkTagsExpr (propertyExpr p)
           return $ p { propertyExpr = e' }
 
-{-mkTagsStrts :: [BitStruct] -> State Int [BitStruct]
-mkTagsStrts = mapM mkTagsStrt
-
-  where
-    mkTagsStrt BitStruct
-      { structName      = name
-      , structFields    = fields } =
-        do
-
-          return $ BitStruct
-            { structName      = name
-            , structFields    = fields' }
--}
 mkTagsSExpr :: (Name, UExpr) -> State Int (Name, UExpr)
 mkTagsSExpr (name, UExpr { uExprExpr = e, uExprType = t }) =
   do

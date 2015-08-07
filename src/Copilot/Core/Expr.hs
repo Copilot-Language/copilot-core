@@ -10,7 +10,6 @@ module Copilot.Core.Expr
   , Name
   , Expr (..)
   , UExpr (..)
-  , SExpr (..)
   , DropIdx
   , Tag
   ) where
@@ -64,6 +63,3 @@ data Expr a where
 data UExpr = forall a. UExpr
   { uExprType :: Type a
   , uExprExpr :: Expr a }
-
--- | An expression for Struct args
-data SExpr = SExpr { sname :: String, uexpr :: UExpr }

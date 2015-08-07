@@ -11,7 +11,6 @@ module Copilot.Core.Spec
   , Trigger (..)
   , Spec (..)
   , Property (..)
-  , StructData (..)
   ) where
 
 import Copilot.Core.Expr (Name, Id, Expr, UExpr)
@@ -56,13 +55,6 @@ data Property = Property
 
 --------------------------------------------------------------------------------
 
--- | Struct representation as a bit array.
-data StructData = StructData
-  { structName       :: Name
-  , structFields     :: [(Name, UExpr)] }
-
---------------------------------------------------------------------------------
-
 -- | A Copilot specification consists of a list of variables bound to anonymous
 -- streams, a list of anomymous streams, a list of observers, a list of
 -- triggers, and a list of structs.
@@ -71,6 +63,5 @@ data Spec = Spec
   , specObservers    :: [Observer]
   , specTriggers     :: [Trigger]
   , specProperties   :: [Property] }
-  --, specStructs      :: [StructData] }
 
 --------------------------------------------------------------------------------

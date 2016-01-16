@@ -35,8 +35,8 @@ data ExtArray = forall a b . Integral a => ExtArray
 data ExtMatrix = forall a b . Integral a => ExtMatrix
   { externMatrixName     :: Name
   , externMatrixElemType :: Type b
-  , externMatrixRowIdx   :: Expr a
-  , externMatrixColIdx   :: Expr a
+  , externMatrixIdxRows   :: Expr a
+  , externMatrixIdxCols   :: Expr a
   , externMatrixIdxType  :: Type a
   , externMatrixRows     :: Int
   , externMatrixCols     :: Int

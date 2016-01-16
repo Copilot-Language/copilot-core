@@ -7,8 +7,8 @@
 {-# LANGUAGE Rank2Types #-}
 
 module Copilot.Core.External
-  ( ExtVar (..), ExtArray (..), ExtFun (..), ExtStruct (..)
-  , externVars, externArrays, externFuns, externStructs
+  ( ExtVar (..), ExtArray (..), ExtMatrix (..), ExtFun (..), ExtStruct (..)
+  , externVars, externArrays, externMatrices, externFuns, externStructs
   ) where
 
 import Copilot.Core.Expr

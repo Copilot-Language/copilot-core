@@ -208,7 +208,7 @@ externStructsUExpr UExpr { uExprExpr = e } =
 
 all :: (forall a . Expr a -> DList b) -> Spec -> DList b
 all f spec =
-  concat (fmap (allStream) (specStreams   spec)) `append`
+  concat (fmap allStream (specStreams   spec)) `append`
   concat (fmap allTrigger  (specTriggers  spec)) `append`
   concat (fmap allObserver (specObservers spec))
 

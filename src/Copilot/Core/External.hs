@@ -5,6 +5,7 @@
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs #-}
 
 module Copilot.Core.External
   ( ExtVar (..), ExtArray (..), ExtMatrix (..), ExtFun (..), ExtStruct (..)
@@ -65,6 +66,7 @@ externVars = nubBy eqExt . toList . all externVarsExpr
 externVarsExpr :: Expr a -> DList ExtVar
 externVarsExpr e0 = case e0 of
   Const  _ _                  -> empty
+  Matrix _ _                  -> empty
   Drop   _ _ _                -> empty
   Local _ _ _ e1 e2           -> externVarsExpr e1 `append` externVarsExpr e2
   Var _ _                     -> empty
@@ -93,6 +95,7 @@ externArrays = toList . all externArraysExpr
 externArraysExpr :: Expr a -> DList ExtArray
 externArraysExpr e0 = case e0 of
   Const  _ _                      -> empty
+  Matrix _ _                      -> empty
   Drop   _ _ _                    -> empty
   Local _ _ _ e1 e2               -> externArraysExpr e1 `append` externArraysExpr e2
   Var _ _                         -> empty
@@ -122,6 +125,7 @@ externMatrices = toList . all externMatricesExpr
 externMatricesExpr :: Expr a -> DList ExtMatrix
 externMatricesExpr e0 = case e0 of
   Const  _ _                      -> empty
+  Matrix _ _                      -> empty
   Drop   _ _ _                    -> empty
   Local _ _ _ e1 e2               -> externMatricesExpr e1 `append` externMatricesExpr e2
   Var _ _                         -> empty
@@ -150,6 +154,7 @@ externFuns = toList . all externFunsExpr
 externFunsExpr :: Expr a -> DList ExtFun
 externFunsExpr e0 = case e0 of
   Const  _ _                    -> empty
+  Matrix _ _                    -> empty
   Drop   _ _ _                  -> empty
   Local _ _ _ e1 e2             -> externFunsExpr e1 `append` externFunsExpr e2
   Var _ _                       -> empty
@@ -179,6 +184,7 @@ externStructs = toList . all externStructsExpr
 externStructsExpr :: Expr a -> DList ExtStruct
 externStructsExpr e0 = case e0 of
   Const _ _                       -> empty
+  Matrix _ _                      -> empty
   Drop  _ _ _                     -> empty
   Local _ _ _ _ _                 -> empty
   Var   _ _                       -> empty

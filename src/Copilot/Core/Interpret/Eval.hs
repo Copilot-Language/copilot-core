@@ -59,47 +59,47 @@ instance Show InterpException where
   --   badUsage $ "you probably gave the wrong type for external element "
   --     ++ name ++ ".  Recheck your types and re-evaluate."
   ---------------------------------------
-  show (ArrayWrongSize name expectedSize)                                      =
+  show (ArrayWrongSize name expectedSize) =
     badUsage $ "in the environment for external array " ++ name
       ++ ", we expect a list of length " ++ show expectedSize
       ++ ", but the length of the array you supplied is of a different length."
   ---------------------------------------
-  show (ArrayIdxOutofBounds name index size)                                   =
+  show (ArrayIdxOutofBounds name index size) =
     badUsage $ "in the environment for external array " ++ name
       ++ ", you gave an index of " ++ show index
       ++ " where the size of the array is " ++ show size ++ "; the size must "
       ++ " be strictly greater than the index."
   ---------------------------------------
-  show (MatrixWrongRowSize name expectedRowSize)                                      =
+  show (MatrixWrongRowSize name expectedRowSize) =
     badUsage $ "in the environment for external matrix " ++ name
       ++ ", we expect a matrix with " ++ show expectedRowSize ++ " rows"
       ++ ", but the matrix you supplied has a different number of rows."
   ---------------------------------------
-  show (MatrixRowIdxOutofBounds name index rows)                                   =
+  show (MatrixRowIdxOutofBounds name index rows) =
     badUsage $ "in the environment for external matrix " ++ name
       ++ ", you gave a row index of " ++ show index
       ++ " where the number of rows in the matrix is " ++ show rows ++ "; the number of rows must "
       ++ " be strictly greater than the index."
     ---------------------------------------
-  show (MatrixWrongColSize name expectedColSize)                                      =
+  show (MatrixWrongColSize name expectedColSize) =
     badUsage $ "in the environment for external matrix " ++ name
       ++ ", we expect a matrix with " ++ show expectedColSize ++ " columns"
       ++ ", but the matrix you supplied has a different number of columns."
   ---------------------------------------
-  show (MatrixColIdxOutofBounds name index cols)                                   =
+  show (MatrixColIdxOutofBounds name index cols) =
     badUsage $ "in the environment for external matrix " ++ name
       ++ ", you gave a column index of " ++ show index
       ++ " where the number of columns in the matrix is " ++ show cols ++ "; the number of columns must "
       ++ " be strictly greater than the index."
   ---------------------------------------
-  show DivideByZero                                                            =
+  show DivideByZero =
     badUsage "divide by zero."
   ---------------------------------------
-  show (NotEnoughValues name k)                                                =
+  show (NotEnoughValues name k) =
     badUsage $ "on the " ++ show k ++ "th iteration, we ran out of "
       ++ "values for simulating the external element " ++ name ++ "."
   ---------------------------------------
-  show (NoExtsInterp name)                                                     =
+  show (NoExtsInterp name) =
     badUsage $ "in a call of external symbol " ++ name ++ ", you did not "
       ++ "provide an expression for interpretation.  In your external "
       ++ "declaration, you need to provide a 'Just strm', where 'strm' is "
@@ -177,6 +177,8 @@ evalExpr :: Int -> Expr a -> LocalEnv -> Env Id -> a
 evalExpr k e locs strms = case e of
 
   Const _ x -> x
+
+  Matrix _ m -> m
 
   Drop t i strId ->
     let Just xs = lookup strId strms >>= fromDynF t in
@@ -282,22 +284,25 @@ evalArray k name idx exts size =
 
 --------------------------------------------------------------------------------
 
-evalMatrix :: Integral b => Int -> Name -> b -> b -> Maybe [[[a]]] -> Int -> Int -> a
+evalMatrix :: Integral b => Int -> Name -> b -> b -> Maybe [[[a]]] -> Int -> Int -> [[a]]
 evalMatrix k name idxr idxc exts rows cols =
   case exts of
     Nothing -> throw (NoExtsInterp name)
     Just xs ->
       case safeIndex k xs of
         Nothing  -> throw (NotEnoughValues name k)
-        Just matr -> if length (take rows matr) == rows && length (take (rows+1) matr) == rows
-                     then case safeIndex (fromIntegral idxr) matr of
-                            Nothing -> throw (MatrixRowIdxOutofBounds name (fromIntegral idxr) rows)
-                            Just row -> if length (take cols row) == cols && length (take (cols+1) row) == cols
-                                        then case safeIndex (fromIntegral idxc) row of
-                                              Nothing -> throw (MatrixColIdxOutofBounds name (fromIntegral idxc) cols)
-                                              Just x  -> x
-                                        else throw (MatrixWrongColSize name cols)
-                     else throw (MatrixWrongRowSize name rows)
+        Just matr -> matr
+
+        --if length (take rows matr) == rows && length (take (rows+1) matr) == rows
+        --             then case safeIndex (fromIntegral idxr) matr of
+        --                    Nothing -> throw (MatrixRowIdxOutofBounds name (fromIntegral idxr) rows)
+        --                    Just row -> if length (take cols row) == cols && length (take (cols+1) row) == cols
+        --                                then case safeIndex (fromIntegral idxc) row of
+        --                                      Nothing -> throw (MatrixColIdxOutofBounds name (fromIntegral idxc) cols)
+        --                                      Just x  -> x
+        --                                else throw (MatrixWrongColSize name cols)
+        --             else throw (MatrixWrongRowSize name rows)
+
 --------------------------------------------------------------------------------
 
 evalOp1 :: Op1 a b -> (a -> b)

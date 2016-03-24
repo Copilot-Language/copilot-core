@@ -6,6 +6,7 @@
 
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GADTs #-}
 
 module Copilot.Core.Locals
   ( Loc (..)
@@ -71,6 +72,7 @@ locsObserver Observer { observerExpr = e } = locsExpr e
 locsExpr :: Expr a -> DList Loc
 locsExpr e0 = case e0 of
   Const  _ _             -> empty
+  Matrix _ _             -> empty
   Drop   _ _ _           -> empty
   Local t _ name e1 e2   -> singleton (Loc name t)
                                         `append` locsExpr e1

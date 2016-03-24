@@ -5,6 +5,7 @@
 -- | Sets a unique tags for each external array/function/struct call.
 
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE GADTs #-}
 
 module Copilot.Core.MakeTags (makeTags) where
 
@@ -122,6 +123,7 @@ mkTagsUExpr UExpr { uExprExpr = e, uExprType = t } =
 mkTagsExpr :: Expr a -> State Int (Expr a)
 mkTagsExpr e0 = case e0 of
   Const t x                       -> return $ Const t x
+  Matrix t x                      -> return $ Matrix t x
   Drop t k id                     -> return $ Drop t k id
   Local t1 t2 name e1 e2          -> liftM2 (Local t1 t2 name) (mkTagsExpr e1) (mkTagsExpr e2)
   Var t name                      -> return $ Var t name

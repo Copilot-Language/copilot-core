@@ -121,7 +121,7 @@ type DynExtVar = DynamicF Expr Type
 
 type StreamEnv = ReaderT [DynExtVar] Gen
 
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------s-------
 
 genStream :: [StreamInfo] -> StreamInfo -> StreamEnv Stream
 genStream ss

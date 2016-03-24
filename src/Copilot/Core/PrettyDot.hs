@@ -72,26 +72,37 @@ tagExtract (Just tag) = tag
 
 ppExprDot :: Int -> Int -> Bool -> Expr a -> (Doc,Int)
 ppExprDot ii pere bb e0 = case e0 of
-  Const t x                  -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
+  Const t x  -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
+                <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+
+  --Matrix t x -> (text (printf "%s [label=\"matrix: %s\",color=red1, style=filled]\n" (show ii::String)  ) ((show x)::String)
+  --              <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+
+  Drop _ 0 id -> (text (printf "%s [label=\"stream: %s\",color=crimson, style=filled]\n" (show ii::String) (show id::String) )
+                 <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+
+  Drop _ i id ->  (text (printf "%s [label=\"drop %s: \nstream: %s\",color=crimson, style=filled]\n" (show ii::String) (show i::String) (show id::String) )
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-  Matrix t x                  -> (text (printf "%s [label=\"matrix: %s\",color=red1, style=filled]\n" (show ii::String) ((show x)::String) )
+
+  Const t x -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-  Drop _ 0 id                -> (text (printf "%s [label=\"stream: %s\",color=crimson, style=filled]\n" (show ii::String) (show id::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-  Drop _ i id                ->  (text (printf "%s [label=\"drop %s: \nstream: %s\",color=crimson, style=filled]\n" (show ii::String) (show i::String) (show id::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-  Const t x                  -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-  ExternVar _ name _         -> (if bb then (text (printf "%s [label=\"externV: %s\",color=cyan1, style=filled]\n" (show ii::String) (name::String)) <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))) else (text (printf "%s [label=\"%s\",color=cyan1, style=filled]\n" (show ii::String) (mkExtTmpVar name)) <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)))
-                  ,ii+1)
+
+  ExternVar _ name _ -> (if bb then (text (printf "%s [label=\"externV: %s\",color=cyan1, style=filled]\n"(show ii::String) (name::String))
+                                 <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)))
+                                 else (text (printf "%s [label=\"%s\",color=cyan1, style=filled]\n" (show ii::String) (mkExtTmpVar name))) ,ii+1)
+
   ExternFun _ name args _ tag  -> let (r1, i1) = ppUExprL (ii+1) ii bb args in
-            (if bb then (text (printf "%s [label=\"externF: %s\",color=cyan4, style=filled]\n" (show ii::String) (name::String)) <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> (hcat (r1))) else (text (printf "%s [label=\"%s\",color=cyan4, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))<> text (printf "%s -> %s\n" (show pere::String) (show ii::String)))
-                  ,i1)
+                                   (if bb then (text (printf "%s [label=\"externF: %s\",color=cyan4, style=filled]\n" (show ii::String) (name::String))
+                                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                                   <> (hcat (r1)))
+                                   else (text (printf "%s [label=\"%s\",color=cyan4, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+                                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
+
   ExternArray _ _ name _ idx _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idx
-           in (if bb then (text (printf "%s [label=\"externA: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String)) <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> r1) else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag)) <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)))
-                  ,i1)
+           in (if bb then (text (printf "%s [label=\"externA: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
+                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                  <> r1) else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
 
   ExternMatrix _ _ name _ _ idxr idxc _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idxr in
                   let (r2,i2) = ppExprDot i1 ii bb idxc in
@@ -105,43 +116,44 @@ ppExprDot ii pere bb e0 = case e0 of
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
                   <> (hcat (r1)),i1)
 
-  GetField _ _ _ name          -> (text (printf "%s [label=\"field: %s\",color=dodgerblue3, style=filled]\n" (show ii::String) (name::String) )
+  GetField _ _ _ name -> (text (printf "%s [label=\"field: %s\",color=dodgerblue3, style=filled]\n" (show ii::String) (name::String) )
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
-  Local _ _ name e1 e2       -> let (r1, i1) = ppExprDot (ii+2) (ii+1) bb e1
+  Local _ _ name e1 e2 -> let (r1, i1) = ppExprDot (ii+2) (ii+1) bb e1
                                 in let (r2, i2) = ppExprDot (i1) ii bb e2
                                 in (text (printf "%s [label=\"local:\",color=blue, style=filled]\n" (show ii::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> text (printf "%s [label=\"def: %s\",color=blue, style=filled]\n" ((show $ ii+1)::String) (name::String) )
-                  <> text (printf "%s -> %s\n" (show ii::String) (show $ ii+1::String))
-                  <> r1
-                  <> r2 ,i2)
+                                <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                                <> text (printf "%s [label=\"def: %s\",color=blue, style=filled]\n" ((show $ ii+1)::String) (name::String) )
+                                <> text (printf "%s -> %s\n" (show ii::String) (show $ ii+1::String))
+                                <> r1
+                                <> r2 ,i2)
 
-  Var _ name                 -> (text (printf "%s [label=\"var: %s\",color=blue, style=filled]\n" (show ii::String) (name::String) )
+  Var _ name -> (text (printf "%s [label=\"var: %s\",color=blue, style=filled]\n" (show ii::String) (name::String) )
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
-  Op1 op e                   -> let (r1,i1) = ppExprDot (ii+1) ii bb e
-           in (text (printf "%s [label=\"op1: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp1 op::String))
+  Op1 op e -> let (r1,i1) = ppExprDot (ii+1) ii bb e
+              in (text (printf "%s [label=\"op1: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp1 op::String))
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
                   <> r1,i1)
 
-  Op2 op e1 e2               -> let (r1,i1) = ppExprDot (ii+1) ii bb e1
+  Op2 op e1 e2 -> let (r1,i1) = ppExprDot (ii+1) ii bb e1
                                 in let (r2,i2) = ppExprDot i1 ii bb e2
-           in (text (printf "%s [label=\"op2: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp2 op::String))
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> r1
-                  <> r2 ,i2)
-  Op3 op e1 e2 e3            -> let (r1,i1) = ppExprDot (ii+1) ii bb e1
-                                in let (r2,i2) = ppExprDot i1 ii bb e2
-                                in let (r3,i3) = ppExprDot i2 ii bb e3
-           in (text (printf "%s [label=\"op3: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp3 op::String))
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> r1
-                  <> r2
-                  <> r3 ,i3)
+                                in (text (printf "%s [label=\"op2: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp2 op::String))
+                                <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                                <> r1
+                                <> r2 ,i2)
 
-  Label _ s e                -> let (r1,i1) = ppExprDot (ii+1) ii bb e
-           in (text (printf "%s [label=\"label: %s\",color=plum, style=filled]\n" (show ii::String) (s::String))
+  Op3 op e1 e2 e3 -> let (r1,i1) = ppExprDot (ii+1) ii bb e1
+                                   in let (r2,i2) = ppExprDot i1 ii bb e2
+                                   in let (r3,i3) = ppExprDot i2 ii bb e3
+                                   in (text (printf "%s [label=\"op3: %s\",color=green4, style=filled]\n" (show ii::String) (ppOp3 op::String))
+                                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                                   <> r1
+                                   <> r2
+                                   <> r3 ,i3)
+
+  Label _ s e -> let (r1,i1) = ppExprDot (ii+1) ii bb e
+                 in (text (printf "%s [label=\"label: %s\",color=plum, style=filled]\n" (show ii::String) (s::String))
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
                   <> r1,i1)
 

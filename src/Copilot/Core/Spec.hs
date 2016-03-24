@@ -25,7 +25,7 @@ import Copilot.Core.Type (Type, Typed)
 --------------------------------------------------------------------------------
 
 -- | A stream.
-data Stream = forall a. Typed a => Stream
+data Stream = forall a. (Typed a) => Stream
   { streamId         :: Id
   , streamBuffer     :: [a]
   , streamExpr       :: Expr a

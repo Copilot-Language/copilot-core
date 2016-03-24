@@ -25,7 +25,7 @@ data ExtVar = ExtVar
   { externVarName :: Name
   , externVarType :: UType }
 
-data ExtArray = forall a b . Integral a => ExtArray
+data ExtArray = forall a b . (Integral a) => ExtArray
   { externArrayName     :: Name
   , externArrayElemType :: Type b
   , externArrayIdx      :: Expr a
@@ -33,7 +33,7 @@ data ExtArray = forall a b . Integral a => ExtArray
   , externArraySize     :: Int
   , externArrayTag      :: Maybe Tag }
 
-data ExtMatrix = forall a b . Integral a => ExtMatrix
+data ExtMatrix = forall a b . (Integral a) => ExtMatrix
   { externMatrixName     :: Name
   , externMatrixElemType :: Type b
   , externMatrixIdxRows  :: Expr a

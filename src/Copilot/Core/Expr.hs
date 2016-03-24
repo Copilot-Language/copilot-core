@@ -43,16 +43,16 @@ type Tag = Int
 
 data Expr a where
   Const        :: Type a -> a -> Expr a
-  Matrix       :: Show a => Type a -> [[a]] -> Expr [[a]]
+  Matrix       :: Type a -> [[a]] -> Expr [[a]]
   Drop         :: Type a -> DropIdx -> Id -> Expr a
   Local        :: Type a -> Type b -> Name -> Expr a -> Expr b -> Expr b
   Var          :: Type a -> Name -> Expr a
   ExternVar    :: Type a -> Name -> Maybe [a] -> Expr a
   ExternFun    :: Type a -> Name -> [UExpr] -> Maybe (Expr a)
                -> Maybe Tag -> Expr a
-  ExternArray  :: Integral a => Type a -> Type b -> Name -> Int -> Expr a
+  ExternArray  :: (Integral a) => Type a -> Type b -> Name -> Int -> Expr a
                -> Maybe [[b]] -> Maybe Tag -> Expr b
-  ExternMatrix :: (Integral a, Show b) => Type a -> Type b -> Name -> Int -> Int -> Expr a -> Expr a
+  ExternMatrix :: (Integral a) => Type a -> Type b -> Name -> Int -> Int -> Expr a -> Expr a
                -> Maybe [[[b]]]-> Maybe Tag -> Expr [[b]]
   ExternStruct :: Type a -> Name -> [(Name, UExpr)] -> Maybe Tag -> Expr a
   GetField     :: Type a -> Type b -> Expr a -> Name -> Expr b

@@ -10,6 +10,8 @@
 module Copilot.Core.PrettyPrint
   ( prettyPrint
   , ppExpr
+  , prPrintVector
+  , prPrintMatrix
   ) where
 
 import Copilot.Core
@@ -17,6 +19,10 @@ import Copilot.Core.Type.Show (showWithType, ShowType(..), showType)
 import Prelude hiding (id)
 import Text.PrettyPrint.HughesPJ
 import Data.List (intersperse)
+
+prPrintVector t x = lbrack <> hsep (punctuate comma (map ( text . (showWithType Haskell t)) x)) <> rbrack
+
+prPrintMatrix t x = lbrack <> hsep (punctuate comma (map (prPrintVector t) x)) <> rbrack
 
 --------------------------------------------------------------------------------
 
@@ -28,7 +34,8 @@ strmName id = text "s" <> int id
 ppExpr :: Expr a -> Doc
 ppExpr e0 = case e0 of
   Const t x                  -> text (showWithType Haskell t x)
---  Matrix _ x                 -> text (show x)
+  Vector t x                 -> prPrintVector t x  
+  Matrix t x                 -> prPrintMatrix t x
   Drop _ 0 id                -> strmName id
   Drop _ i id                -> text "drop" <+> text (show i) <+> strmName id
   ExternVar _ name _         -> text "Ext_" <> (text name)
@@ -37,9 +44,8 @@ ppExpr e0 = case e0 of
   ExternArray _ _ name _ idx _ _
                              -> text "Exta_" <> (text name) <> lbrack
                                   <> ppExpr idx <> rbrack
-  ExternMatrix _ _ name _ _ idxr idxc _ _
-                             -> text "Exta_" <> (text name) <> lbrack
-                                  <> ppExpr idxr <> comma <> ppExpr idxc <> rbrack
+  ExternVector _ name _ _ _  -> text "Extv_" <> (text name)
+  ExternMatrix _ name _ _ _ _ -> text "Extm_" <> (text name)
   ExternStruct _ name args _ -> text "struct" <+> doubleQuotes (text name <> lbrace
                                   <> vcat (punctuate (semi <> space) (map ppSExpr $ args)) <> rbrace)
   GetField _ _ _ name        -> text "field" <+> doubleQuotes (text name)

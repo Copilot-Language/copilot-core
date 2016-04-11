@@ -104,12 +104,12 @@ ppExprDot ii pere bb e0 = case e0 of
                   <> r1) else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
 
-  ExternMatrix _ _ name _ _ idxr idxc _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idxr in
-                  let (r2,i2) = ppExprDot i1 ii bb idxc in
-                  (if bb then (text (printf "%s [label=\"externA: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
-                     <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) <> r1 <> r2, i2)
-                   else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
-                     <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) ,i2))
+  --ExternMatrix _ name _ _ _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idxr in
+  --                let (r2,i2) = ppExprDot i1 ii bb idxc in
+  --                (if bb then (text (printf "%s [label=\"externM: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
+  --                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) <> r1 <> r2, i2)
+  --                 else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+  --                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) ,i2))
 
   ExternStruct _ name args _ -> let (r1, i1) = ppUExprL (ii+1) ii bb (map snd $args) in
             (text (printf "%s [label=\"externS: %s\",color=dodgerblue2, style=filled]\n" (show ii::String) (name::String))

@@ -72,6 +72,7 @@ locsObserver Observer { observerExpr = e } = locsExpr e
 locsExpr :: Expr a -> DList Loc
 locsExpr e0 = case e0 of
   Const  _ _             -> empty
+  Vector _ _             -> empty
   Matrix _ _             -> empty
   Drop   _ _ _           -> empty
   Local t _ name e1 e2   -> singleton (Loc name t)
@@ -81,7 +82,8 @@ locsExpr e0 = case e0 of
   ExternVar _ _ _                -> empty
   ExternFun _ _ _ _ _            -> empty
   ExternArray _ _ _ _ _ _ _      -> empty
-  ExternMatrix _ _ _ _ _ _ _ _ _ -> empty
+  ExternVector _ _ _ _ _         -> empty
+  ExternMatrix _ _ _ _ _ _       -> empty
   ExternStruct _ _ _ _           -> empty
   GetField _ _ _ _               -> empty
   Op1 _ e                        -> locsExpr e

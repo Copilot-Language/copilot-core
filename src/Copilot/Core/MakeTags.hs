@@ -123,6 +123,7 @@ mkTagsUExpr UExpr { uExprExpr = e, uExprType = t } =
 mkTagsExpr :: Expr a -> State Int (Expr a)
 mkTagsExpr e0 = case e0 of
   Const t x                       -> return $ Const t x
+  Vector t x                      -> return $ Vector t x
   Matrix t x                      -> return $ Matrix t x
   Drop t k id                     -> return $ Drop t k id
   Local t1 t2 name e1 e2          -> liftM2 (Local t1 t2 name) (mkTagsExpr e1) (mkTagsExpr e2)
@@ -135,11 +136,10 @@ mkTagsExpr e0 = case e0 of
               size idx e _        -> do idx' <- mkTagsExpr idx
                                         k <- next
                                         return $ ExternArray t1 t2 name size idx' e (Just k)
-  ExternMatrix t1 t2 name rows
-              cols idxr idxc e _  -> do idxr' <- mkTagsExpr idxr
-                                        idxc' <- mkTagsExpr idxc
-                                        k <- next
-                                        return $ ExternMatrix t1 t2 name rows cols idxr' idxc' e (Just k)
+  ExternVector t name size e _    -> do k <- next
+                                        return $ ExternVector t name size e (Just k)                                      
+  ExternMatrix t name rows cols e _  -> do k <- next
+                                           return $ ExternMatrix t name rows cols e (Just k)
   ExternStruct t name sargs _     -> do args' <- mapM mkTagsSExpr sargs
                                         k <- next
                                         return $ ExternStruct t name args' (Just k)

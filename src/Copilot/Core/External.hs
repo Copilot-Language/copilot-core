@@ -8,8 +8,8 @@
 {-# LANGUAGE GADTs #-}
 
 module Copilot.Core.External
-  ( ExtVar (..), ExtArray (..), ExtMatrix (..), ExtFun (..), ExtStruct (..)
-  , externVars, externArrays, externMatrices, externFuns, externStructs
+  ( ExtVar (..), ExtArray (..), ExtVector (..), ExtMatrix (..), ExtFun (..), ExtStruct (..)
+  , externVars, externArrays, externVectors, externMatrices, externFuns, externStructs
   ) where
 
 import Copilot.Core.Expr
@@ -33,12 +33,25 @@ data ExtArray = forall a b . (Integral a) => ExtArray
   , externArraySize     :: Int
   , externArrayTag      :: Maybe Tag }
 
-data ExtMatrix = forall a b . (Integral a) => ExtMatrix
+--data ExtMatrix = forall a b . (Integral a) => ExtMatrix
+--  { externMatrixName     :: Name
+--  , externMatrixElemType :: Type b
+--  , externMatrixIdxRows  :: Expr a
+--  , externMatrixIdxCols  :: Expr a
+--  , externMatrixIdxType  :: Type a
+--  , externMatrixRows     :: Int
+--  , externMatrixCols     :: Int
+--  , externMatrixTag      :: Maybe Tag }
+
+data ExtVector = forall a . ExtVector
+  { externVectorName     :: Name
+  , externVectorElemType :: Type a
+  , externVectorSize     :: Int
+  , externVectorTag      :: Maybe Tag }
+
+data ExtMatrix = forall a . ExtMatrix
   { externMatrixName     :: Name
-  , externMatrixElemType :: Type b
-  , externMatrixIdxRows  :: Expr a
-  , externMatrixIdxCols  :: Expr a
-  , externMatrixIdxType  :: Type a
+  , externMatrixElemType :: Type a
   , externMatrixRows     :: Int
   , externMatrixCols     :: Int
   , externMatrixTag      :: Maybe Tag }
@@ -66,14 +79,15 @@ externVars = nubBy eqExt . toList . all externVarsExpr
 externVarsExpr :: Expr a -> DList ExtVar
 externVarsExpr e0 = case e0 of
   Const  _ _                  -> empty
+  Vector _ _                  -> empty
   Matrix _ _                  -> empty
   Drop   _ _ _                -> empty
   Local _ _ _ e1 e2           -> externVarsExpr e1 `append` externVarsExpr e2
   Var _ _                     -> empty
   ExternVar t name _          -> singleton (ExtVar name (UType t))
   ExternArray _ _ _ _ idx _ _ -> externVarsExpr idx
-  ExternMatrix _ _ _ _ _ idxr idxc _ _
-                              -> externVarsExpr idxr `append` externVarsExpr idxc
+  ExternVector _ _ _ _ _      -> empty
+  ExternMatrix _ _ _ _ _ _    -> empty
   ExternFun _ _ ues _ _       -> concat (map externVarsUExpr ues)
   ExternStruct _ _ _ _        -> empty
   GetField _ _ _ _            -> empty
@@ -95,6 +109,7 @@ externArrays = toList . all externArraysExpr
 externArraysExpr :: Expr a -> DList ExtArray
 externArraysExpr e0 = case e0 of
   Const  _ _                      -> empty
+  Vector _ _                      -> empty
   Matrix _ _                      -> empty
   Drop   _ _ _                    -> empty
   Local _ _ _ e1 e2               -> externArraysExpr e1 `append` externArraysExpr e2
@@ -102,8 +117,8 @@ externArraysExpr e0 = case e0 of
   ExternVar _ _ _                 -> empty
   ExternArray t1 t2  name
               size idx _ tag      -> singleton (ExtArray name t2 idx t1 size tag)
-  ExternMatrix _ _ _ _ _ idxr idxc _ _
-                                  -> externArraysExpr idxr `append` externArraysExpr idxc
+  ExternVector _ _ _ _ _          -> empty            
+  ExternMatrix _ _ _ _ _ _        -> empty
   ExternFun _ _ ues _ _           -> concat (map externArraysUExpr ues)
   ExternStruct _ _ _ _            -> empty
   GetField _ _ _ _                -> empty
@@ -125,14 +140,16 @@ externMatrices = toList . all externMatricesExpr
 externMatricesExpr :: Expr a -> DList ExtMatrix
 externMatricesExpr e0 = case e0 of
   Const  _ _                      -> empty
+  Vector _ _                      -> empty
   Matrix _ _                      -> empty
   Drop   _ _ _                    -> empty
   Local _ _ _ e1 e2               -> externMatricesExpr e1 `append` externMatricesExpr e2
   Var _ _                         -> empty
   ExternVar _ _ _                 -> empty
   ExternArray _ _ _ _ idx _ _     -> externMatricesExpr idx
-  ExternMatrix t1 t2  name rows
-              cols idxr idxc _ tag      -> singleton (ExtMatrix name t2 idxr idxc t1 rows cols tag)
+  ExternVector t name size _ tag  -> empty
+  ExternMatrix t name rows cols _ tag
+                                  -> singleton (ExtMatrix name t rows cols tag)
   ExternFun _ _ ues _ _           -> concat (map externMatricesUExpr ues)
   ExternStruct _ _ _ _            -> empty
   GetField _ _ _ _                -> empty
@@ -148,20 +165,52 @@ externMatricesUExpr UExpr { uExprExpr = e } = externMatricesExpr e
 
 --------------------------------------------------------------------------------
 
+externVectors :: Spec -> [ExtVector]
+externVectors = toList . all externVectorsExpr
+
+externVectorsExpr :: Expr a -> DList ExtVector
+externVectorsExpr e0 = case e0 of
+  Const  _ _                      -> empty
+  Vector _ _                      -> empty
+  Matrix _ _                      -> empty
+  Drop   _ _ _                    -> empty
+  Local _ _ _ e1 e2               -> externVectorsExpr e1 `append` externVectorsExpr e2
+  Var _ _                         -> empty
+  ExternVar _ _ _                 -> empty
+  ExternArray _ _ _ _ idx _ _     -> externVectorsExpr idx
+  ExternVector t name size _ tag  -> singleton (ExtVector name t size tag)
+  ExternMatrix _ _ _ _ _ _        -> empty
+  ExternFun _ _ ues _ _           -> concat (map externVectorsUExpr ues)
+  ExternStruct _ _ _ _            -> empty
+  GetField _ _ _ _                -> empty
+  Op1 _ e                         -> externVectorsExpr e
+  Op2 _ e1 e2                     -> externVectorsExpr e1 `append` externVectorsExpr e2
+  Op3 _ e1 e2 e3                  -> externVectorsExpr e1 `append`
+                                     externVectorsExpr e2 `append`
+                                     externVectorsExpr e3
+  Label _ _ e                     -> externVectorsExpr e
+
+externVectorsUExpr :: UExpr -> DList ExtVector
+externVectorsUExpr UExpr { uExprExpr = e } = externVectorsExpr e
+
+
+--------------------------------------------------------------------------------
+
 externFuns :: Spec -> [ExtFun]
 externFuns = toList . all externFunsExpr
 
 externFunsExpr :: Expr a -> DList ExtFun
 externFunsExpr e0 = case e0 of
   Const  _ _                    -> empty
+  Vector _ _                      -> empty
   Matrix _ _                    -> empty
   Drop   _ _ _                  -> empty
   Local _ _ _ e1 e2             -> externFunsExpr e1 `append` externFunsExpr e2
   Var _ _                       -> empty
   ExternVar _ _ _               -> empty
   ExternArray _ _ _ _ idx _ _   -> externFunsExpr idx
-  ExternMatrix _ _ _ _ _ idxr idxc _ _
-                                -> externFunsExpr idxr `append` externFunsExpr idxc
+  ExternVector _ _ _ _ _      -> empty
+  ExternMatrix _ _ _ _ _ _      -> empty
   ExternFun t name ues _ tag    -> concat $ singleton (ExtFun name t ues tag) : (map externFunsUExpr ues)
   ExternStruct _ _ _ _          -> empty
   GetField _ _ _ _              -> empty
@@ -184,13 +233,15 @@ externStructs = toList . all externStructsExpr
 externStructsExpr :: Expr a -> DList ExtStruct
 externStructsExpr e0 = case e0 of
   Const _ _                       -> empty
+  Vector _ _                      -> empty
   Matrix _ _                      -> empty
   Drop  _ _ _                     -> empty
   Local _ _ _ _ _                 -> empty
   Var   _ _                       -> empty
   ExternVar   _ _ _               -> empty
   ExternArray _ _ _ _ _ _ _       -> empty
-  ExternMatrix _ _ _ _ _ _ _ _ _  -> empty
+  ExternVector _ _ _ _ _          -> empty
+  ExternMatrix _ _ _ _ _ _        -> empty
   ExternFun   _ _ _ _ _           -> empty
   ExternStruct _ name ses tag     -> {-if t == Struct then -}singleton (ExtStruct name ses tag){- else empty-}
                                       --concat . map externStructsUExpr ues

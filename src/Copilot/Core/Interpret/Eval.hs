@@ -13,6 +13,7 @@ module Copilot.Core.Interpret.Eval
   , Output
   , ExecTrace (..)
   , eval
+  , evalExpr
   ) where
 
 import Copilot.Core
@@ -177,6 +178,8 @@ evalExpr :: Int -> Expr a -> LocalEnv -> Env Id -> a
 evalExpr k e locs strms = case e of
 
   Const _ x -> x
+ 
+  Vector _ v -> v
 
   Matrix _ m -> m
 
@@ -202,10 +205,9 @@ evalExpr k e locs strms = case e of
     where
       evalIdx = evalExpr k idx locs strms
 
-  ExternMatrix _ _ name rows cols idxr idxc xs _ -> evalMatrix k name evalIdxr evalIdxc xs rows cols
-    where
-      evalIdxr = evalExpr k idxr locs strms
-      evalIdxc = evalExpr k idxc locs strms
+  ExternVector _ name size xs _ -> evalVector k name xs
+
+  ExternMatrix _ name rows cols xs _ -> evalMatrix k name xs
 
   ExternStruct _ _ _ _   -> error "unimplemented"
   GetField _ _ _ _       -> error "unimplemented"
@@ -284,8 +286,19 @@ evalArray k name idx exts size =
 
 --------------------------------------------------------------------------------
 
-evalMatrix :: Integral b => Int -> Name -> b -> b -> Maybe [[[a]]] -> Int -> Int -> [[a]]
-evalMatrix k name idxr idxc exts rows cols =
+evalVector :: Int -> Name -> Maybe [[a]] -> [a]
+evalVector k name exts =
+  case exts of
+    Nothing -> throw (NoExtsInterp name)
+    Just xs ->
+      case safeIndex k xs of
+        Nothing  -> throw (NotEnoughValues name k)
+        Just vect -> vect
+
+--------------------------------------------------------------------------------
+
+evalMatrix :: Int -> Name -> Maybe [[[a]]] -> [[a]]
+evalMatrix k name exts =
   case exts of
     Nothing -> throw (NoExtsInterp name)
     Just xs ->
@@ -414,7 +427,7 @@ evalTrigger showType k strms Trigger { triggerGuard = e
     evalUExpr (UExpr t e1) =
       map (showWithType showType t) (evalExprs k e1 strms)
 
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 evalObserver :: ShowType -> Int -> Env Id -> Observer -> [Output]
 evalObserver showType k strms Observer { observerExpr     = e
                                        , observerExprType = t }

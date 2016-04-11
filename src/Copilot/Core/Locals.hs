@@ -71,24 +71,22 @@ locsObserver Observer { observerExpr = e } = locsExpr e
 
 locsExpr :: Expr a -> DList Loc
 locsExpr e0 = case e0 of
-  Const  _ _             -> empty
-  Vector _ _             -> empty
-  Matrix _ _             -> empty
-  Drop   _ _ _           -> empty
-  Local t _ name e1 e2   -> singleton (Loc name t)
-                                        `append` locsExpr e1
-                                        `append` locsExpr e2
-  Var _ _                        -> empty
-  ExternVar _ _ _                -> empty
-  ExternFun _ _ _ _ _            -> empty
-  ExternArray _ _ _ _ _ _ _      -> empty
-  ExternVector _ _ _ _ _         -> empty
-  ExternMatrix _ _ _ _ _ _       -> empty
-  ExternStruct _ _ _ _           -> empty
-  GetField _ _ _ _               -> empty
-  Op1 _ e                        -> locsExpr e
-  Op2 _ e1 e2                    -> locsExpr e1 `append` locsExpr e2
-  Op3 _ e1 e2 e3                 -> locsExpr e1 `append` locsExpr e2
-                                            `append` locsExpr e3
+  Const  _ _                 -> empty
+  Vector _ _                 -> empty
+  Matrix _ _                 -> empty
+  Drop   _ _ _               -> empty
+  Local t _ name e1 e2       -> singleton (Loc name t) `append` locsExpr e1 `append` locsExpr e2
+  Var _ _                    -> empty
+  ExternVar _ _ _            -> empty
+  ExternFun _ _ _ _ _        -> empty
+  ExternArray _ _ _ _ _ _ _  -> empty
+  ExternVector _ _ _ _ _     -> empty
+  ExternMatrix _ _ _ _ _ _   -> empty
+  ExternStruct _ _ _ _       -> empty
+  GetField _ _ _ _           -> empty
+  Op1 _ e                    -> locsExpr e
+  Op2 _ e1 e2                -> locsExpr e1 `append` locsExpr e2
+  Op3 _ e1 e2 e3             -> locsExpr e1 `append` locsExpr e2 `append` locsExpr e3
+  Label _ _ e                -> locsExpr e
 
 --------------------------------------------------------------------------------

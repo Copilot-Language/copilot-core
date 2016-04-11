@@ -20,14 +20,20 @@ import Prelude hiding (id)
 import Text.PrettyPrint.HughesPJ
 import Data.List (intersperse)
 
-prPrintVector t x = lbrack <> hsep (punctuate comma (map ( text . (showWithType Haskell t)) x)) <> rbrack
 
-prPrintMatrix t x = lbrack <> hsep (punctuate comma (map (prPrintVector t) x)) <> rbrack
 
 --------------------------------------------------------------------------------
 
 strmName :: Int -> Doc
 strmName id = text "s" <> int id
+
+--------------------------------------------------------------------------------
+
+prPrintVector :: Type a -> [a] -> Doc
+prPrintVector t x = lbrack <> hsep (punctuate comma (map ( text . (showWithType Haskell t)) x)) <> rbrack
+
+prPrintMatrix :: Type a -> [[a]] -> Doc
+prPrintMatrix t x = lbrack <> hsep (punctuate comma (map (prPrintVector t) x)) <> rbrack
 
 --------------------------------------------------------------------------------
 

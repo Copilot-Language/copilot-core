@@ -13,6 +13,7 @@ module Copilot.Core.PrettyDot
   ) where
 
 import Copilot.Core
+import Copilot.Core.PrettyPrint
 import Copilot.Core.Type.Show (showWithType, ShowType(..), showType)
 import Prelude hiding (id)
 import Text.PrettyPrint.HughesPJ
@@ -45,6 +46,9 @@ mkExtTmpTag name tag = "ext_" ++ name ++ "_" ++ show (tagExtract tag)
 mkExtArrFn :: String -> String
 mkExtArrFn = (++) "ext_arr_"
 
+mkExtVecFn :: String -> String
+mkExtVecFn = (++) "ext_vec_"
+
 mkExtMatrFn :: String -> String
 mkExtMatrFn = (++) "ext_matr_"
 
@@ -70,21 +74,21 @@ tagExtract (Just tag) = tag
 
 --------------------------------------------------------------------------------
 
-ppExprDot :: Int -> Int -> Bool -> Expr a -> (Doc,Int)
+ppExprDot :: Int -> Int -> Bool -> Expr a -> (Doc, Int)
 ppExprDot ii pere bb e0 = case e0 of
   Const t x  -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
                 <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
-  --Matrix t x -> (text (printf "%s [label=\"matrix: %s\",color=red1, style=filled]\n" (show ii::String)  ) ((show x)::String)
-  --              <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+  Vector t x -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((render $ prPrintVector t x)::String) )
+                <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+
+  Matrix t x -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((render $ prPrintMatrix t x)::String) )
+                <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
   Drop _ 0 id -> (text (printf "%s [label=\"stream: %s\",color=crimson, style=filled]\n" (show ii::String) (show id::String) )
                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
   Drop _ i id ->  (text (printf "%s [label=\"drop %s: \nstream: %s\",color=crimson, style=filled]\n" (show ii::String) (show i::String) (show id::String) )
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
-
-  Const t x -> (text (printf "%s [label=\"const: %s\",color=red1, style=filled]\n" (show ii::String) ((showWithType Haskell t x)::String) )
                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
   ExternVar _ name _ -> (if bb then (text (printf "%s [label=\"externV: %s\",color=cyan1, style=filled]\n"(show ii::String) (name::String))
@@ -97,19 +101,22 @@ ppExprDot ii pere bb e0 = case e0 of
                                    <> (hcat (r1)))
                                    else (text (printf "%s [label=\"%s\",color=cyan4, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
                                    <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
+                                   
+  ExternArray _ _ name _ idx _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idx 
+                                      in (if bb then (text (printf "%s [label=\"externA: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
+                                        <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
+                                        <> r1) else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+                                        <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
 
-  ExternArray _ _ name _ idx _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idx
-           in (if bb then (text (printf "%s [label=\"externA: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))
-                  <> r1) else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
-                  <> text (printf "%s -> %s\n" (show pere::String) (show ii::String))),i1)
+  ExternVector _ name _ _ tag -> if bb then (text (printf "%s [label=\"externVec: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
+                                 <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+                                 else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+                                 <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
-  --ExternMatrix _ name _ _ _ tag -> let (r1,i1) = ppExprDot (ii+1) ii bb idxr in
-  --                let (r2,i2) = ppExprDot i1 ii bb idxc in
-  --                (if bb then (text (printf "%s [label=\"externM: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
-  --                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) <> r1 <> r2, i2)
-  --                 else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
-  --                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)) ,i2))
+  ExternMatrix _ name _ _ _ tag -> if bb then (text (printf "%s [label=\"externM: %s\",color=cyan3, style=filled]\n" (show ii::String) (name::String))
+                                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
+                                   else (text (printf "%s [label=\"%s\",color=cyan3, style=filled]\n" (show ii::String) (mkExtTmpTag name tag))
+                                   <> text (printf "%s -> %s\n" (show pere::String) (show ii::String)),ii+1)
 
   ExternStruct _ name args _ -> let (r1, i1) = ppUExprL (ii+1) ii bb (map snd $args) in
             (text (printf "%s [label=\"externS: %s\",color=dodgerblue2, style=filled]\n" (show ii::String) (name::String))

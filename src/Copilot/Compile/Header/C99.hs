@@ -223,8 +223,7 @@ ppExternalStruct :: ExtStruct -> Doc
 ppExternalStruct
   ExtStruct
   { externStructName  = name
-  , externStructArgs  = args
-  , externStructTag   = tag } =
+  , externStructArgs  = args} =
       --text "struct" <+> text name <> text "{" <> ppStructArgs args <> text "};"
       hang (hang (text "struct" <+> text name <+> text "{") 1 (nest 1 (ppStructArgs args))) 1 (text "};")
 
@@ -235,7 +234,7 @@ ppExternalStruct
     ppStructArgs = vcat . map ppStructArg
 
     ppStructArg :: (Name, UExpr) -> Doc
-    ppStructArg (name, UExpr { uExprType = t1, uExprExpr = e1 }) = text (typeSpec (UType t1)) <+>
+    ppStructArg (name, UExpr { uExprType = t1 }) = text (typeSpec (UType t1)) <+>
       text name <> text ";"
       {-text ( case e1 of
           Var _ name -> name

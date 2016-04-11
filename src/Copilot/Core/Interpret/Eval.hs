@@ -36,10 +36,10 @@ import Data.Typeable
 data InterpException
   = ArrayWrongSize Name Int
   | ArrayIdxOutofBounds Name Int Int
-  | MatrixWrongRowSize Name Int
-  | MatrixRowIdxOutofBounds Name Int Int
-  | MatrixWrongColSize Name Int
-  | MatrixColIdxOutofBounds Name Int Int
+  -- | MatrixWrongRowSize Name Int
+  -- | MatrixRowIdxOutofBounds Name Int Int
+  -- | MatrixWrongColSize Name Int
+  -- | MatrixColIdxOutofBounds Name Int Int
   | DivideByZero
   | NotEnoughValues Name Int
   | NoExtsInterp Name
@@ -71,27 +71,27 @@ instance Show InterpException where
       ++ " where the size of the array is " ++ show size ++ "; the size must "
       ++ " be strictly greater than the index."
   ---------------------------------------
-  show (MatrixWrongRowSize name expectedRowSize) =
-    badUsage $ "in the environment for external matrix " ++ name
-      ++ ", we expect a matrix with " ++ show expectedRowSize ++ " rows"
-      ++ ", but the matrix you supplied has a different number of rows."
-  ---------------------------------------
-  show (MatrixRowIdxOutofBounds name index rows) =
-    badUsage $ "in the environment for external matrix " ++ name
-      ++ ", you gave a row index of " ++ show index
-      ++ " where the number of rows in the matrix is " ++ show rows ++ "; the number of rows must "
-      ++ " be strictly greater than the index."
-    ---------------------------------------
-  show (MatrixWrongColSize name expectedColSize) =
-    badUsage $ "in the environment for external matrix " ++ name
-      ++ ", we expect a matrix with " ++ show expectedColSize ++ " columns"
-      ++ ", but the matrix you supplied has a different number of columns."
-  ---------------------------------------
-  show (MatrixColIdxOutofBounds name index cols) =
-    badUsage $ "in the environment for external matrix " ++ name
-      ++ ", you gave a column index of " ++ show index
-      ++ " where the number of columns in the matrix is " ++ show cols ++ "; the number of columns must "
-      ++ " be strictly greater than the index."
+  --show (MatrixWrongRowSize name expectedRowSize) =
+  --  badUsage $ "in the environment for external matrix " ++ name
+  --    ++ ", we expect a matrix with " ++ show expectedRowSize ++ " rows"
+  --    ++ ", but the matrix you supplied has a different number of rows."
+  -----------------------------------------
+  --show (MatrixRowIdxOutofBounds name index rows) =
+  --  badUsage $ "in the environment for external matrix " ++ name
+  --    ++ ", you gave a row index of " ++ show index
+  --    ++ " where the number of rows in the matrix is " ++ show rows ++ "; the number of rows must "
+  --    ++ " be strictly greater than the index."
+  --  ---------------------------------------
+  --show (MatrixWrongColSize name expectedColSize) =
+  --  badUsage $ "in the environment for external matrix " ++ name
+  --    ++ ", we expect a matrix with " ++ show expectedColSize ++ " columns"
+  --    ++ ", but the matrix you supplied has a different number of columns."
+  -----------------------------------------
+  --show (MatrixColIdxOutofBounds name index cols) =
+  --  badUsage $ "in the environment for external matrix " ++ name
+  --    ++ ", you gave a column index of " ++ show index
+  --    ++ " where the number of columns in the matrix is " ++ show cols ++ "; the number of columns must "
+  --    ++ " be strictly greater than the index."
   ---------------------------------------
   show DivideByZero =
     badUsage "divide by zero."
@@ -205,9 +205,9 @@ evalExpr k e locs strms = case e of
     where
       evalIdx = evalExpr k idx locs strms
 
-  ExternVector _ name size xs _ -> evalVector k name xs
+  ExternVector _ name _ xs _ -> evalVector k name xs
 
-  ExternMatrix _ name rows cols xs _ -> evalMatrix k name xs
+  ExternMatrix _ name _ _ xs _ -> evalMatrix k name xs
 
   ExternStruct _ _ _ _   -> error "unimplemented"
   GetField _ _ _ _       -> error "unimplemented"

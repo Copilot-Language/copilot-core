@@ -7,8 +7,7 @@
 {-# LANGUAGE Safe #-}
 
 module Copilot.Core.Interpret
-  ( --ExtEnv (..)
-    Format (..)
+  ( Format (..)
   , interpret
   ) where
 

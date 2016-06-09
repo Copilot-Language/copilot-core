@@ -92,7 +92,7 @@ randomFromType t =
     n <- choose (toInteger mn, toInteger mx)
     return (fromInteger n `asTypeOf` mn)
 
-  genFractional :: (Random a, Fractional a) => Gen a
+  genFractional :: Random a => Gen a
   genFractional = do
     g <- stdGen
     return $ fst (random g)

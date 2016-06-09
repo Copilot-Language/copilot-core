@@ -41,8 +41,6 @@ library
     -caf-all
     -fno-warn-orphans
 
-    --enable-library-profiling
-
     -fpackage-trust
     -trust=array
     -trust=base

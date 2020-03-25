@@ -78,7 +78,7 @@ mkTagsTrigs = mapM mkTagsTrig
      , triggerArgs      = args } =
        do
          g' <- mkTagsExpr g
-         args' <- mapM mkTagsUExpr args
+         args' <- mapM (\(mn, arg) -> ((,) mn) <$> mkTagsUExpr arg) args
          return $ Trigger
            { triggerName      = name
            , triggerGuard     = g'

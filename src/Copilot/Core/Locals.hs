@@ -54,7 +54,7 @@ locsStream Stream { streamExpr = e } = locsExpr e
 
 locsTrigger :: Trigger -> DList Loc
 locsTrigger Trigger { triggerGuard = e, triggerArgs = args } =
-  locsExpr e `append` concat (fmap locsUExpr args)
+  locsExpr e `append` concat (fmap (locsUExpr . snd) args)
 
   where
 

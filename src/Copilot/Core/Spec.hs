@@ -40,7 +40,7 @@ data Observer = forall a. Typeable a => Observer
 data Trigger = Trigger
   { triggerName      :: Name
   , triggerGuard     :: Expr Bool
-  , triggerArgs      :: [UExpr] }
+  , triggerArgs      :: [(Maybe String, UExpr)] }
 
 --------------------------------------------------------------------------------
 

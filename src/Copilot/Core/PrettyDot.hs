@@ -169,7 +169,7 @@ ppTrigger i
   ,i2)
   where
     (r1, i1) = ppExprDot (i+2) (i+1) True e
-    (r2, i2) = ppUExprL (i1+1) (i1) True args
+    (r2, i2) = ppUExprL (i1+1) (i1) True (fmap snd args)
 
 ppUExprL :: Int -> Int -> Bool -> [UExpr] -> ([Doc], Int)
 ppUExprL i _ _ [] = ([], i)

@@ -140,9 +140,12 @@ ppTrigger
   <+> text "="
   <+> ppExpr e
   <+> lbrack
-  $$  (nest 2 $ vcat (punctuate comma $
-                          map (\a -> text "arg" <+> ppUExpr a) args))
+  $$  (nest 2 $ vcat (punctuate comma $ map mk_arg_label args))
   $$  nest 2 rbrack
+  where
+  mk_arg_label = \(mn, a) -> case mn of
+    Just name -> text "arg_" <+> text name <+> ppUExpr a
+    Nothing   -> text "arg_" <+> ppUExpr a
 
 --------------------------------------------------------------------------------
 

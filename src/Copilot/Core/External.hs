@@ -68,7 +68,7 @@ all f spec =
   allTrigger
     Trigger
       { triggerGuard = e
-      , triggerArgs = args } = f e `append` concat (fmap allUExpr args)
+      , triggerArgs = args } = f e `append` concat (fmap (allUExpr . snd) args)
 
   allUExpr
     (UExpr _ e1) = f e1

@@ -336,7 +336,7 @@ evalTrigger showType k strms
   -- The argument outputs.
   vs :: [[Output]]
   vs = if null args then replicate k []  -- might be 0 args.
-         else transpose $ map evalUExpr args
+         else transpose $ map (evalUExpr . snd) args
 
   evalUExpr :: UExpr -> [Output]
   evalUExpr (UExpr t e1) =
